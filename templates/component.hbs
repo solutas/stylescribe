@@ -92,6 +92,15 @@
 {{/each}}
 </div>
 
+<div class="container">
+    <h3>Use CSS Var</h3>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+    {{#each ./page.cssVars}}
+        <div style="padding: 10px; border: 1px solid #ccc;">{{this}}</div>
+    {{/each}}
+</div>
+
+</div>
 
 </div>
 </main>
