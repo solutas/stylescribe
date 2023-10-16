@@ -1,13 +1,17 @@
 {
   "name": "stylescribe",
   "version": "0.0.1",
-  "description": "",
+  "description": "stylescribe is an open-source style guide building tool for css only libraries",
   "main": "index.js",
   "bin": {
     "stylescribe": "./bin/stylescribe.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "url": "git@github.com:solutas/stylescribe.git",
+    "type": "github"
   },
   "author": "",
   "license": "ISC",
