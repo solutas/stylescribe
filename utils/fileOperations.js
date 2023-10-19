@@ -330,6 +330,13 @@ handlebars.registerHelper('nl2br', function(text) {
     return new handlebars.SafeString(html);
 });
 
+handlebars.registerHelper('capitalizeFirst', function(text) {
+    if (typeof text !== 'string' || !text) {
+      return '';
+    }
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  });
+
 function groupByGroup(components, groupOrder = []) {
     // First, group components by their group
     const grouped = components.reduce((acc, component) => {

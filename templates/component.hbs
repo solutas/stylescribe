@@ -114,7 +114,11 @@
         </div>
         {{/if}}
 
-
+<pre>
+                    <code class="language-js">
+import "@solutas/mgnl-elements-css/build/{{page.path}}/{{page.name}}.css"
+                    </code>
+                </pre>
 </div>
 
 {{#if page.examples}}
@@ -165,7 +169,7 @@
         mgnl-{{../../page.name}}--{{ this }}
         {{/each}}">
         {{#each ../page.elements}}
-        <div class="mgnl-{{../../page.name}}__{{ this }}">{{ this }}</div>
+        <div class="mgnl-{{../../page.name}}__{{ this }}">{{capitalizeFirst this }}</div>
         {{/each}}
     </{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}}>
     </div>  

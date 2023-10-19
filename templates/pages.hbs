@@ -7,7 +7,7 @@
         {{#if externalCssIncludes}}
         <style>
             {{#each externalCssIncludes}}
-            @import url('{{this}}');      
+            @import url('{{{this}}}');
             {{/each}}
         </style>    
         {{/if}}        
