@@ -15,6 +15,43 @@
         <link rel="stylesheet" href="{{this}}">
         {{/each}}
         
+        <style>
+            .code-container {
+    position: relative;
+    max-height: 100px;
+    overflow: hidden;
+}
+
+.expand-btn {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, white, transparent);
+    border: none;
+    color: #333;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+}
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    color: #333;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+}
+.copy-btn:hover {
+    color:#000;
+}
+.code-container:hover .expand-btn {
+    display: block;
+}
+        </style>
     </head>
     <body>
         
@@ -42,13 +79,31 @@
 
 
 
-<div style="overflow: auto;flex:1"">
+<div style="overflow: auto;flex:1">
 
 <div class="container p-3">
 <div class="border-bottom mb-3 ">
+    
 
            <h1>{{page.title}}</h1>
-        <div>{{{page.description}}}</div>
+        <p>{{{page.description}}}</p>
+
+<div class="mt-3 shadow-lg border p-3 rounded d-flex align-items-center">
+        {{#if page.draft }}
+        <div class="rounded-circle bg-warning" style="width:20px;height:20px"></div>
+        <div class="p-2">Draft</div>
+        {{ else }}
+        {{#if page.verified }}
+        <div class="rounded-circle bg-success" style="width:20px;height:20px"></div>
+        <div class="p-2">Verified</div>
+        {{else}}
+        <div class="rounded-circle bg-danger" style="width:20px;height:20px"></div>
+        <div class="p-2">Experiment</div>
+        {{/if}}
+        {{/if}}
+        
+    </div>
+
         {{#if page.dependencies}}
         <div class="mt-3 shadow-lg border p-3 rounded">Dependencies:
             
@@ -61,42 +116,83 @@
 
 
 </div>
+
+{{#if page.examples}}
+    {{#each page.examples}}
+        <div class="card mb-3">
+            {{#if this.title}} <!-- Check if 'title' exists -->
+            <div class="card-body">
+                <h1 class="card-title">{{this.title}}</h1>
+                <p class="card-text">{{this.description}}</p>
+{{{this.code}}}
+<div class="code-container">
+    <button class="copy-btn">Copy</button>
+                <pre>
+                    <code class="language-html">
+{{prettyprint this.code}}
+                    </code>
+                </pre>
+                <textarea style="height:0px; opacity:0">{{prettyprint this.code}}</textarea>
+                <button class="expand-btn">Expand</button>
+                </div>
+</div>
+            {{else}} <!-- Fallback for the array format -->
+                {{{this}}}
+                <div class="code-container">
+    <button class="copy-btn">Copy</button>
+
+                <pre>
+                    <code class="language-html">
+{{prettyprint this}}
+                    </code>
+                </pre>
+                                <textarea  style="height:0px; opacity:0" class="d-none">{{prettyprint this.code}}</textarea>
+                <button class="expand-btn">Expand</button>
+                </div>
+            {{/if}}
+        </div>
+    {{/each}}
+{{/if}}
+
+{{#if page.variations }}
 <h1>Variations</h1>
      {{#each page.variations}}
     <h2>{{ this }}</h2>
 
       <div class="mb-4 ">
-    <div role="{{../page.role}}" tabindex="0" class="mgnl-{{../page.name}} mgnl-{{../page.name}}--{{ this }} 
+    <{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}} role="{{../page.role}}" tabindex="0" class="mgnl-{{../page.name}} mgnl-{{../page.name}}--{{ this }} 
         {{#each ../page.additional_variations}}
         mgnl-{{../../page.name}}--{{ this }}
         {{/each}}">
         {{#each ../page.elements}}
         <div class="mgnl-{{../../page.name}}__{{ this }}">{{ this }}</div>
         {{/each}}
-    </div>
+    </{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}}>
     </div>  
 
 <pre>
     <code class="language-html">
-&lt;div role="{{../page.role}}" tabindex="0" class="mgnl-{{../page.name}} mgnl-{{../page.name}}--{{ this }} 
+&lt;{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}} role="{{../page.role}}" tabindex="0" class="mgnl-{{../page.name}} mgnl-{{../page.name}}--{{ this }} 
         {{#each ../page.additional_variations}}
         mgnl-{{../../page.name}}--{{ this }}
         {{/each}}"&gt;
         {{#each ../page.elements}}
         &lt;div class="mgnl-{{../../page.name}}__{{ this }}"&gt;{{ this }}&lt;/div&gt;
 {{/each}}
-&lt;/div&gt;    
+&lt;/{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}}&gt;    
     </code>
     </pre>
         
 {{/each}}
 </div>
 
+{{/if}}
+
 <div class="container">
     <h3>Use CSS Var</h3>
     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
     {{#each ./page.cssVars}}
-        <div style="padding: 10px; border: 1px solid #ccc;">{{this}}</div>
+        <div style="padding: 10px; border: 1px solid #ccc;">--{{this}}</div>
     {{/each}}
 </div>
 
@@ -108,5 +204,35 @@
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
 
 
+<script>
+document.querySelectorAll('.expand-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+        var container = this.parentElement;
+
+        if (container.style.maxHeight === 'none') {
+            // If already expanded, shrink it
+            container.style.maxHeight = '100px';
+            this.innerText = 'Expand';
+        } else {
+            // If shrunk, expand it
+            container.style.maxHeight = 'none';
+            this.innerText = 'Collapse';
+        }
+    });
+});
+
+document.querySelectorAll('.copy-btn').forEach(function(button) {
+    
+    button.addEventListener('click', function() {
+        var textarea = this.parentElement.querySelector("textarea"); // get the textarea next to the copy button
+        console.log(textarea)
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        alert('Code copied to clipboard!');
+    });
+});
+
+</script>
     </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "stylescribe",
-  "version": "0.0.3",
+  "version": "0.0.7",
   "description": "stylescribe is an open-source style guide building tool for css only libraries",
   "main": "index.js",
   "bin": {
@@ -23,6 +23,7 @@
     "front-matter": "^4.0.2",
     "fs-extra": "^11.1.1",
     "handlebars": "^4.7.8",
+    "js-beautify": "^1.14.9",
     "markdown-it": "^13.0.2",
     "marked": "^9.1.2",
     "open": "^9.1.0",

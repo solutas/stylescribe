@@ -8,6 +8,7 @@ const { extractAnnotations } = require("./annotations");
 const stylelint = require('stylelint');
 const chokidar = require('chokidar');
 const handlebars = require('handlebars');
+const beautify_html = require('js-beautify').html;
 const frontMatter = require('front-matter');
 var MarkdownIt = require('markdown-it'),
     md = new MarkdownIt();
@@ -18,6 +19,12 @@ const ensureDir = dirPath => {
     }
 };
 
+function newlineReviver(key, value) {
+    if (typeof value === 'string') {
+        return value.replace(/\\n/g, '\n');
+    }
+    return value;
+}
 
 const DEV_SERVER_ROOT =  '.stylescribe_dev';
 
@@ -141,7 +148,7 @@ exports.buildCssAndAnnotation = async (sourceDir, outputDir, watch) => {
     let styleFiles = [];
 
     try {
-        styleFiles = await fg([`${sourceDir}/**/*.css`, `${sourceDir}/**/*.scss`]);
+        styleFiles = await fg([`${sourceDir}/**/*.css`, `${sourceDir}/components/**/*.scss`]);
     } catch (err) {
         console.error(`Error reading files from ${sourceDir}:`, err.message);
         return;
@@ -307,8 +314,20 @@ exports.processMarkdownFiles = async (sourceDir, outputDir, watch) => {
     }
 }
 
+
+// TODO: extract to own file
+
 handlebars.registerHelper('eq', function (a, b, options) {
     return (a === b)
+});
+handlebars.registerHelper('prettyprint', function(content) {
+    const html = beautify_html(content); // replace stringified \n with actual newline
+    return html;
+});
+
+handlebars.registerHelper('nl2br', function(text) {
+    const html = (text || '').toString().replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
+    return new handlebars.SafeString(html);
 });
 
 function groupByGroup(components, groupOrder = []) {
@@ -358,7 +377,7 @@ const buildSite = async (sourceDir, outputDir, withmd=false) => {
 
     // Read components.json
     const componentsFilePath = path.join(sourceDir, 'components.json');
-    const componentsJson = JSON.parse(fs.readFileSync(componentsFilePath, 'utf-8'));
+    const componentsJson = JSON.parse(fs.readFileSync(componentsFilePath, 'utf-8'), newlineReviver);
 
     // Read the Handlebars template
     const templatePath = path.join(__dirname, '..', 'templates', 'component.hbs');
@@ -367,7 +386,7 @@ const buildSite = async (sourceDir, outputDir, withmd=false) => {
 
     const groups = groupByGroup(componentsJson, componentGroupOrder);
     if(withmd) {
-        processMarkdownFiles(process.cwd(), outputDir, { groups, components: componentsJson, externalCssIncludes});
+        processMarkdownFiles(process.cwd(), outputDir, { groups, components: componentsJson, externalCssIncludes, headIncludes});
     }
 
     // For each component, generate HTML using the template and save it

@@ -1,13 +1,13 @@
 const RESERVED_WORDS = ['cssVars'];
 
-exports.extractAnnotations = function(content) {  
-    // Extract only content between /** and */
+exports.extractAnnotations = function (content) {
     const commentMatch = content.match(/\/\*\*([\s\S]*?)\*\//);
 
     if (commentMatch) {
         const commentContent = commentMatch[1];
-
         const annotationRegExp = /@(\w+)([^@]*)/gs;
+        // const annotationRegExp = /(^|\n)\s*@(\w+)([^@]*)/gs;
+
         let match;
         let annotationsObj = {};
 
@@ -21,13 +21,32 @@ exports.extractAnnotations = function(content) {
             }
 
             // Clean up the value
-            value = value
-                .replace(/\n\s*\*/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
+            value = value.replace(/\n\s*\*/g, '\n').trim();
 
-            // Check if the key is plural
-            if (key.endsWith('s')) {
+            // Check for new format when the key ends with 's'
+            if (key.endsWith('s') && value.startsWith('-')) {
+                let items = [];
+                const itemEntryRegex = /-\s+([\s\S]*?)(?=-\s|$)/g; // Captures each item's content
+                // const keyValueRegex = /(\w+):\s*([\s\S]*?)(?=\w+:|$)/g; // Captures key-value pairs within an item
+                const keyValueRegex = /(?<=^|\s)(\w+):\s*([\s\S]*?)(?=\s\w+:|$)/g;
+
+                let itemEntryMatch;
+
+                while ((itemEntryMatch = itemEntryRegex.exec(value)) !== null) {
+                    let itemContent = itemEntryMatch[1];
+                    let itemObj = {};
+
+                    let keyValueMatch;
+                    while ((keyValueMatch = keyValueRegex.exec(itemContent)) !== null) {
+                        let itemKey = keyValueMatch[1].replace(/\n\s*\*/g, '').trim();
+                        let itemValue = keyValueMatch[2].replace(/\n\s*\*/g, '\n').trim();
+                        itemObj[itemKey] = itemValue;
+                    }
+
+                    items.push(itemObj);
+                }
+                value = items;
+            } else if (key.endsWith('s')) {
                 value = value.split(',').map(v => v.trim());
             }
 
