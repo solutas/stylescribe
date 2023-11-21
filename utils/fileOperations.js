@@ -26,7 +26,7 @@ function newlineReviver(key, value) {
     return value;
 }
 
-const DEV_SERVER_ROOT =  '.stylescribe_dev';
+const DEV_SERVER_ROOT = '.stylescribe_dev';
 
 
 exports.DEV_SERVER_ROOT = DEV_SERVER_ROOT;
@@ -201,33 +201,78 @@ const processStyleFile = async (filePath, sourceDir, outputDir) => {
 
         // Process the file content, extract annotations, etc.
         const result = await sass.compile(filePath, {
-            importers: [{
-                canonicalize(url) {
-                    if (!url.startsWith('~')) {
-                        return null; // This importer doesn't recognize the URL, so it returns null.
+            importers: [
+                // import from node_modules
+                {
+                    canonicalize(url) {
+                        if (!url.startsWith('~')) {
+                            return null; // This importer doesn't recognize the URL, so it returns null.
+                        }
+
+                        let file_in_modules = path.resolve(process.cwd(), 'node_modules', url.substring(1));
+                        return new URL(`file://${file_in_modules}`);
+                    },
+                    load(canonicalUrl) {
+                        try {
+                            const filePath = canonicalUrl.pathname;
+                            // On Windows, URL's pathname might start with an extra '/', so you'd need to remove it
+                            const normalizedFilePath = process.platform === 'win32' ? path.normalize(filePath.slice(1)) : path.normalize(filePath);
+
+                            const fileContents = fs.readFileSync(normalizedFilePath, 'utf-8');
+
+                            return {
+                                contents: fileContents,
+                                syntax: 'scss'
+                            };
+                        } catch (error) {
+                            console.error(`Error reading file ${canonicalUrl}: ${error.message}`);
+                            throw error;
+                        }
                     }
-
-                    let file_in_modules = path.resolve(process.cwd(), 'node_modules', url.substring(1));
-                    return new URL(`file://${file_in_modules}`);
                 },
-                load(canonicalUrl) {
-                    try {
-                        const filePath = canonicalUrl.pathname;
-                        // On Windows, URL's pathname might start with an extra '/', so you'd need to remove it
-                        const normalizedFilePath = process.platform === 'win32' ? path.normalize(filePath.slice(1)) : path.normalize(filePath);
+                // inline svg's and save as scss var
+                {
+                    canonicalize(url, options) {
+                        if (!url.endsWith('.svg')) {
+                            return null; // This importer doesn't recognize the URL, so it returns null.
+                        }
 
-                        const fileContents = fs.readFileSync(normalizedFilePath, 'utf-8');
+                        // Extract directory from the containing URL
+                        let containingDir = path.dirname(options.containingUrl.pathname);
 
-                        return {
-                            contents: fileContents,
-                            syntax: 'scss'
-                        };
-                    } catch (error) {
-                        console.error(`Error reading file ${canonicalUrl}: ${error.message}`);
-                        throw error;
+                        // Resolve the relative URL of the SVG file to an absolute file path
+                        let svgAbsolutePath = path.resolve(containingDir, url);
+
+
+                        // Create and return a URL object with the absolute file path
+                        return new URL(`file://${svgAbsolutePath}`);
+                    },
+                    load(canonicalUrl) {
+                        try {
+                            const filePath = canonicalUrl.pathname;
+                            // On Windows, URL's pathname might start with an extra '/', so you'd need to remove it
+                            const normalizedFilePath = process.platform === 'win32' ? path.normalize(filePath.slice(1)) : path.normalize(filePath);
+
+                            const fileContents = fs.readFileSync(normalizedFilePath, 'utf-8');
+                            // Base64 encode the file contents
+                            const base64Encoded = Buffer.from(fileContents).toString('base64');
+
+                            // Extract the file name and remove '.svg' extension to create a variable name
+                            const fileName = path.basename(normalizedFilePath, '.svg');
+                            const sassVariable = `$${fileName}: "data:image/svg+xml;base64,${base64Encoded}";`;
+
+                            return {
+                                contents: sassVariable,
+                                syntax: 'scss'
+                            };
+                        } catch (error) {
+                            console.error(`Error reading file ${canonicalUrl}: ${error.message}`);
+                            throw error;
+                        }
                     }
                 }
-            }]
+
+            ]
         });
 
 
@@ -260,24 +305,24 @@ const processStyleFile = async (filePath, sourceDir, outputDir) => {
     }
 }
 
-const processMarkdownFiles = async (sourceDir, outputDir, context={}) => {
+const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
     // Glob for markdown files
     const markdownFiles = await fg([`${sourceDir}/docs/**/*.md`]);
-    
+
     for (const filePath of markdownFiles) {
         const fileContent = fs.readFileSync(filePath, 'utf-8');
-        
+
         // Extract front matter and content
         const parsedContent = frontMatter(fileContent);
         const htmlContent = md.render(parsedContent.body);
-        
+
         let outputFilename;
         if (parsedContent.attributes.slug) {
             outputFilename = `${parsedContent.attributes.slug}.html`;
         } else {
             outputFilename = path.basename(filePath, '.md') + '.html';
         }
-        
+
         // Choose a template based on filename
         let templatePath;
         if (path.basename(filePath) === 'index.md') {
@@ -285,20 +330,20 @@ const processMarkdownFiles = async (sourceDir, outputDir, context={}) => {
         } else {
             templatePath = path.join(__dirname, "..", "templates", 'pages.hbs');
         }
-        
+
         const templateContent = fs.readFileSync(templatePath, 'utf-8');
         const template = handlebars.compile(templateContent);
-        
+
         // Merge the data from front matter and the HTML content
         const htmlOutput = template({ ...context, ...parsedContent.attributes, content: htmlContent });
-        
+
         // Write the output HTML
         fs.writeFileSync(path.join(outputDir, outputFilename), htmlOutput);
     }
 }
 const watchDocsFolderForChanges = (sourceDir, outputDir) => {
     const md_dir = path.join(process.cwd(), "docs");
-    chokidar.watch(md_dir, { persistent: true }).on('change',async (filePath) => {
+    chokidar.watch(md_dir, { persistent: true }).on('change', async (filePath) => {
         if (path.extname(filePath) === '.md') {
             // processMarkdownFiles(sourceDir, outputDir);
             await buildSite(sourceDir, outputDir, true); // trigger buildSite on changes
@@ -307,10 +352,10 @@ const watchDocsFolderForChanges = (sourceDir, outputDir) => {
     });
 }
 exports.watchDocsFolderForChanges = watchDocsFolderForChanges;
-exports.processMarkdownFiles = async (sourceDir, outputDir, watch) => {        
+exports.processMarkdownFiles = async (sourceDir, outputDir, watch) => {
     buildSite(sourceDir, outputDir, true); // trigger buildSite on changes
-    if(watch) {
-    watchDocsFolderForChanges(sourceDir, outputDir);    
+    if (watch) {
+        watchDocsFolderForChanges(sourceDir, outputDir);
     }
 }
 
@@ -320,22 +365,22 @@ exports.processMarkdownFiles = async (sourceDir, outputDir, watch) => {
 handlebars.registerHelper('eq', function (a, b, options) {
     return (a === b)
 });
-handlebars.registerHelper('prettyprint', function(content) {
+handlebars.registerHelper('prettyprint', function (content) {
     const html = beautify_html(content); // replace stringified \n with actual newline
     return html;
 });
 
-handlebars.registerHelper('nl2br', function(text) {
+handlebars.registerHelper('nl2br', function (text) {
     const html = (text || '').toString().replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
     return new handlebars.SafeString(html);
 });
 
-handlebars.registerHelper('capitalizeFirst', function(text) {
+handlebars.registerHelper('capitalizeFirst', function (text) {
     if (typeof text !== 'string' || !text) {
-      return '';
+        return '';
     }
     return text.charAt(0).toUpperCase() + text.slice(1);
-  });
+});
 
 function groupByGroup(components, groupOrder = []) {
     // First, group components by their group
@@ -363,7 +408,7 @@ function groupByGroup(components, groupOrder = []) {
 }
 
 
-const buildSite = async (sourceDir, outputDir, withmd=false) => {
+const buildSite = async (sourceDir, outputDir, withmd = false) => {
     // Ensure the output directory exists. If not, create it.
     if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
@@ -379,7 +424,7 @@ const buildSite = async (sourceDir, outputDir, withmd=false) => {
         headIncludes = headIncludes.filter(include => !include.startsWith('http'));
 
         componentGroupOrder = packageJson.components?.groupOrder || [];
-        
+
     }
 
     // Read components.json
@@ -392,8 +437,8 @@ const buildSite = async (sourceDir, outputDir, withmd=false) => {
     const template = handlebars.compile(templateContent);
 
     const groups = groupByGroup(componentsJson, componentGroupOrder);
-    if(withmd) {
-        processMarkdownFiles(process.cwd(), outputDir, { groups, components: componentsJson, externalCssIncludes, headIncludes});
+    if (withmd) {
+        processMarkdownFiles(process.cwd(), outputDir, { groups, components: componentsJson, externalCssIncludes, headIncludes });
     }
 
     // For each component, generate HTML using the template and save it
@@ -428,17 +473,17 @@ const buildSite = async (sourceDir, outputDir, withmd=false) => {
         });
 
 
-        
+
         const context = {
             currentPath: component.path,
             components: componentsJson,
-            groups,    
+            groups,
             page: component,
             headIncludes: adjustedAllCssIncludes,
             externalCssIncludes
         };
 
-        
+
         const htmlOutput = template(context);
 
         const outputFilePath = path.join(outputDir, `${component.path}.html`);
