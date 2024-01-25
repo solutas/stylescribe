@@ -60,7 +60,29 @@ From the provided example:
 This property manages how component groups are organized and displayed.
 - **`groupOrder`**: An array that sets the sequence of component groups. In the example, `"Base"` components are displayed before `"UI Components"`.
 
+### `productionBasepath`:
 
+This is passed to the ```components.hbs``` template and is used to display the location of the css file in production. e.g. ```@solutas/my-css-package/build```.
+
+
+## Template Customization:
+`stylescribe` allows for customization of Handlebars templates used for generating the style guide. Users can overwrite the default templates or extend the functionality by adding their own templates.
+
+- Templates should be placed in the `.stylescribe/templates` directory in your project's root.
+- Partials (reusable template snippets) should be added to `.stylescribe/templates/includes`.
+- If a template or partial exists in the `.stylescribe` directory, it will be used instead of the default one.
+
+These are the existing templates and includes which can be customized at the moment:
+```
+├── component.hbs
+├── includes
+│   ├── branding.hbs
+│   └── homepage_header.hbs
+├── index.hbs
+└── pages.hbs
+````
+
+This allows for a high degree of customization, enabling you to tailor the style guide to your project's specific needs.
 
 
 ## Source File Structure:
@@ -107,6 +129,28 @@ Ensure there's a `.stylelintrc.json` in the root directory:
     "extends": "stylelint-config-standard-scss"
 }
 ```
+
+## Handling SVG Imports in SCSS Files
+
+`stylescribe` offers a unique feature allowing you to import SVG files directly within your SCSS files. This functionality simplifies the process of using SVG icons and graphics in your stylesheets.
+
+### How to Import SVGs
+
+To import an SVG file into your SCSS, use the standard `@import` statement followed by the relative path to the SVG file. For example:
+
+```scss
+@import "../../assets/icons/checkbox-semi.svg";
+```
+
+### Conversion to SASS Variables
+Once imported, `stylescribe` processes the SVG file and converts it into a SASS variable. This variable represents the SVG as a base64-encoded data URL, making it easy to incorporate into your CSS. For example, the SVG file checkbox-semi.svg would be available as a variable like:
+
+```scss
+content: url($checkbox-semi);
+```
+
+During the build process, stylescribe resolves these imports.
+
 
 ## Feedback & Contributions:
 

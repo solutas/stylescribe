@@ -10,8 +10,10 @@ const chokidar = require('chokidar');
 const handlebars = require('handlebars');
 const beautify_html = require('js-beautify').html;
 const frontMatter = require('front-matter');
-var MarkdownIt = require('markdown-it'),
-    md = new MarkdownIt();
+const { getTemplatePath } = require("../utils/pathResolver");
+const MarkdownIt = require('markdown-it');
+
+const md = new MarkdownIt();
 
 const ensureDir = dirPath => {
     if (!fs.existsSync(dirPath)) {
@@ -176,6 +178,31 @@ exports.buildCssAndAnnotation = async (sourceDir, outputDir, watch) => {
 
 };
 
+const registerPartials = () => {
+    const defaultIncludesDir = path.join(__dirname, '..', 'templates', 'includes');
+    const cwdIncludesDir = path.join(process.cwd(), '.stylescribe', 'templates', 'includes');
+
+    // Register default partials
+    if (fs.existsSync(defaultIncludesDir)) {
+        const files = fs.readdirSync(defaultIncludesDir);
+        files.forEach(file => {
+            const partial = fs.readFileSync(path.join(defaultIncludesDir, file), 'utf-8');
+            const partialName = path.basename(file, '.hbs');
+            handlebars.registerPartial(partialName, partial);
+        });
+    }
+
+    // Overwrite or add new partials from current working directory
+    if (fs.existsSync(cwdIncludesDir)) {
+        const files = fs.readdirSync(cwdIncludesDir);
+        files.forEach(file => {
+            const partial = fs.readFileSync(path.join(cwdIncludesDir, file), 'utf-8');
+            handlebars.registerPartial(path.basename(file, '.hbs'), partial);
+        });
+    }
+};
+
+registerPartials();
 
 const processStyleFile = async (filePath, sourceDir, outputDir) => {
     try {
@@ -326,9 +353,9 @@ const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
         // Choose a template based on filename
         let templatePath;
         if (path.basename(filePath) === 'index.md') {
-            templatePath = path.join(__dirname, "..", "templates", 'index.hbs');
+            templatePath = getTemplatePath('index.hbs');
         } else {
-            templatePath = path.join(__dirname, "..", "templates", 'pages.hbs');
+            templatePath = getTemplatePath('pages.hbs');
         }
 
         const templateContent = fs.readFileSync(templatePath, 'utf-8');
@@ -417,6 +444,7 @@ const buildSite = async (sourceDir, outputDir, withmd = false) => {
     let headIncludes = {};
     let externalCssIncludes = [];
     let componentGroupOrder = [];
+    let productionBasepath;
     if (fs.existsSync(packageJsonPath)) {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
         headIncludes = packageJson.headIncludes?.css || [];
@@ -424,7 +452,7 @@ const buildSite = async (sourceDir, outputDir, withmd = false) => {
         headIncludes = headIncludes.filter(include => !include.startsWith('http'));
 
         componentGroupOrder = packageJson.components?.groupOrder || [];
-
+        productionBasepath = packageJson.productionBasepath;
     }
 
     // Read components.json
@@ -432,7 +460,7 @@ const buildSite = async (sourceDir, outputDir, withmd = false) => {
     const componentsJson = JSON.parse(fs.readFileSync(componentsFilePath, 'utf-8'), newlineReviver);
 
     // Read the Handlebars template
-    const templatePath = path.join(__dirname, '..', 'templates', 'component.hbs');
+    const templatePath = getTemplatePath('component.hbs');
     const templateContent = fs.readFileSync(templatePath, 'utf-8');
     const template = handlebars.compile(templateContent);
 
@@ -480,7 +508,8 @@ const buildSite = async (sourceDir, outputDir, withmd = false) => {
             groups,
             page: component,
             headIncludes: adjustedAllCssIncludes,
-            externalCssIncludes
+            externalCssIncludes,
+            productionBasepath
         };
 
 
