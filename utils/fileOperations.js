@@ -282,6 +282,27 @@ const processStyleFile = async (filePath, sourceDir, outputDir) => {
 const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
     const markdownFiles = await fg([`${sourceDir}/docs/**/*.md`]);
 
+    // Load tokens if available (from config or standard locations)
+    let tokens = null;
+    const configPath = path.join(process.cwd(), '.stylescriberc.json');
+    if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+        if (config.tokensFile && fs.existsSync(path.join(process.cwd(), config.tokensFile))) {
+            tokens = JSON.parse(fs.readFileSync(path.join(process.cwd(), config.tokensFile), 'utf-8'));
+        }
+    }
+    // Check standard token locations
+    const standardTokenPaths = ['tokens/design-tokens.json', 'tokens.json', 'design-tokens.json'];
+    if (!tokens) {
+        for (const tokenPath of standardTokenPaths) {
+            const fullPath = path.join(process.cwd(), tokenPath);
+            if (fs.existsSync(fullPath)) {
+                tokens = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+                break;
+            }
+        }
+    }
+
     for (const filePath of markdownFiles) {
         const fileContent = fs.readFileSync(filePath, 'utf-8');
         const parsedContent = frontMatter(fileContent);
@@ -294,20 +315,62 @@ const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
             outputFilename = path.basename(filePath, '.md') + '.html';
         }
 
+        // Support custom template via frontmatter
         let templatePath;
-        if (path.basename(filePath) === 'index.md') {
+        if (parsedContent.attributes.template) {
+            templatePath = getTemplatePath(`${parsedContent.attributes.template}.hbs`);
+        } else if (path.basename(filePath) === 'index.md') {
             templatePath = getTemplatePath('index.hbs');
         } else {
             templatePath = getTemplatePath('pages.hbs');
         }
 
+        // Load custom tokens file if specified in frontmatter
+        let pageTokens = tokens;
+        if (parsedContent.attributes.tokensFile) {
+            const customTokenPath = path.join(process.cwd(), parsedContent.attributes.tokensFile);
+            if (fs.existsSync(customTokenPath)) {
+                pageTokens = JSON.parse(fs.readFileSync(customTokenPath, 'utf-8'));
+            }
+        }
+
         const templateContent = fs.readFileSync(templatePath, 'utf-8');
         const template = Handlebars.compile(templateContent);
-        const htmlOutput = template({ ...context, ...parsedContent.attributes, content: htmlContent });
+        const htmlOutput = template({
+            ...context,
+            ...parsedContent.attributes,
+            content: htmlContent,
+            tokens: pageTokens,
+            flatTokens: pageTokens ? flattenTokensForDisplay(pageTokens) : null
+        });
 
         fs.writeFileSync(path.join(outputDir, outputFilename), htmlOutput);
     }
 };
+
+// Flatten tokens for easier template iteration
+function flattenTokensForDisplay(tokens, prefix = '', result = []) {
+    for (const [key, value] of Object.entries(tokens)) {
+        if (key.startsWith('$')) continue;
+
+        const currentPath = prefix ? `${prefix}-${key}` : key;
+        const category = prefix ? prefix.split('-')[0] : key;
+
+        if (value && typeof value === 'object' && '$value' in value) {
+            result.push({
+                name: currentPath,
+                cssVar: `--${currentPath}`,
+                value: value.$value,
+                type: value.$type || 'string',
+                description: value.$description || '',
+                category: category
+            });
+        } else if (value && typeof value === 'object') {
+            flattenTokensForDisplay(value, currentPath, result);
+        }
+    }
+    return result;
+}
 
 const watchDocsFolderForChanges = (sourceDir, outputDir) => {
     const md_dir = path.join(process.cwd(), "docs");
