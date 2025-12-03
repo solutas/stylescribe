@@ -149,24 +149,22 @@
                         <li class="nav-item">
                             <a class="nav-link" href="../index.html">Home</a>
                         </li>
-                        {{#each navigation.groups}}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">{{@key}}</a>
+                            <a class="nav-link dropdown-toggle active" href="#" data-bs-toggle="dropdown">Components</a>
                             <ul class="dropdown-menu">
-                                {{#each this}}
+                                {{#each groups as |groupComponents groupName|}}
+                                <li><h6 class="dropdown-header">{{groupName}}</h6></li>
+                                {{#each groupComponents}}
                                 <li><a class="dropdown-item" href="./{{this.name}}.html">{{this.title}}</a></li>
                                 {{/each}}
-                            </ul>
-                        </li>
-                        {{/each}}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Documentation</a>
-                            <ul class="dropdown-menu">
-                                {{#each navigation.pages}}
-                                <li><a class="dropdown-item" href="../{{this.slug}}.html">{{this.title}}</a></li>
                                 {{/each}}
                             </ul>
                         </li>
+                        {{#each navigation.pages}}
+                        <li class="nav-item">
+                            <a class="nav-link" href="../{{this.slug}}.html">{{this.title}}</a>
+                        </li>
+                        {{/each}}
                     </ul>
                 </div>
             </div>
