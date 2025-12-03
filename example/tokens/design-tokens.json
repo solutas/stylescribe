@@ -1,0 +1,159 @@
+{
+  "color": {
+    "primary": {
+      "$value": "#0d6efd",
+      "$type": "color",
+      "$description": "Primary brand color for interactive elements"
+    },
+    "primary-hover": {
+      "$value": "#0b5ed7",
+      "$type": "color",
+      "$description": "Hover state for primary color"
+    },
+    "secondary": {
+      "$value": "#6c757d",
+      "$type": "color",
+      "$description": "Secondary color for less prominent elements"
+    },
+    "success": {
+      "$value": "#198754",
+      "$type": "color",
+      "$description": "Success state color"
+    },
+    "danger": {
+      "$value": "#dc3545",
+      "$type": "color",
+      "$description": "Error and danger state color"
+    },
+    "warning": {
+      "$value": "#ffc107",
+      "$type": "color",
+      "$description": "Warning state color"
+    }
+  },
+  "spacing": {
+    "xs": {
+      "$value": "4px",
+      "$type": "dimension",
+      "$description": "Extra small spacing"
+    },
+    "sm": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$description": "Small spacing"
+    },
+    "md": {
+      "$value": "16px",
+      "$type": "dimension",
+      "$description": "Medium spacing (default)"
+    },
+    "lg": {
+      "$value": "24px",
+      "$type": "dimension",
+      "$description": "Large spacing"
+    },
+    "xl": {
+      "$value": "32px",
+      "$type": "dimension",
+      "$description": "Extra large spacing"
+    }
+  },
+  "border": {
+    "radius": {
+      "sm": {
+        "$value": "4px",
+        "$type": "dimension",
+        "$description": "Small border radius"
+      },
+      "md": {
+        "$value": "8px",
+        "$type": "dimension",
+        "$description": "Medium border radius"
+      },
+      "lg": {
+        "$value": "12px",
+        "$type": "dimension",
+        "$description": "Large border radius"
+      }
+    },
+    "width": {
+      "$value": "1px",
+      "$type": "dimension",
+      "$description": "Default border width"
+    }
+  },
+  "font": {
+    "family": {
+      "base": {
+        "$value": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "$type": "fontFamily",
+        "$description": "Base font family"
+      },
+      "mono": {
+        "$value": "SFMono-Regular, Menlo, Monaco, monospace",
+        "$type": "fontFamily",
+        "$description": "Monospace font family"
+      }
+    },
+    "size": {
+      "sm": {
+        "$value": "0.875rem",
+        "$type": "dimension",
+        "$description": "Small font size"
+      },
+      "base": {
+        "$value": "1rem",
+        "$type": "dimension",
+        "$description": "Base font size"
+      },
+      "lg": {
+        "$value": "1.25rem",
+        "$type": "dimension",
+        "$description": "Large font size"
+      }
+    },
+    "weight": {
+      "normal": {
+        "$value": "400",
+        "$type": "fontWeight"
+      },
+      "medium": {
+        "$value": "500",
+        "$type": "fontWeight"
+      },
+      "bold": {
+        "$value": "700",
+        "$type": "fontWeight"
+      }
+    }
+  },
+  "shadow": {
+    "sm": {
+      "$value": "0 1px 2px rgba(0, 0, 0, 0.05)",
+      "$type": "shadow",
+      "$description": "Small shadow"
+    },
+    "md": {
+      "$value": "0 4px 6px rgba(0, 0, 0, 0.1)",
+      "$type": "shadow",
+      "$description": "Medium shadow"
+    },
+    "lg": {
+      "$value": "0 10px 15px rgba(0, 0, 0, 0.1)",
+      "$type": "shadow",
+      "$description": "Large shadow"
+    }
+  },
+  "transition": {
+    "fast": {
+      "$value": "150ms",
+      "$type": "duration",
+      "$description": "Fast transition duration"
+    },
+    "base": {
+      "$value": "300ms",
+      "$type": "duration",
+      "$description": "Base transition duration"
+    }
+  }
+}

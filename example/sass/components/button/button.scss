@@ -1,0 +1,115 @@
+/**
+ * @title Button
+ * @description A versatile button component for user interactions.
+ *   Supports multiple visual styles and sizes for different contexts.
+ * @navtitle Button
+ * @group Interactive
+ * @order 1
+ * @verified true
+ * @role button
+ * @maintag button
+ * @variations primary, secondary, danger, outline
+ * @additional_variations sm, lg
+ * @elements icon, label
+ * @examples
+ * - title: Primary Button
+ *   description: The main call-to-action button style
+ *   code: <button class="mgnl-button mgnl-button--primary"><span class="mgnl-button__label">Click me</span></button>
+ * - title: Button with Icon
+ *   description: Button with an icon and label
+ *   code: <button class="mgnl-button mgnl-button--primary"><span class="mgnl-button__icon">★</span><span class="mgnl-button__label">Favorite</span></button>
+ */
+
+.mgnl-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-base);
+  text-decoration: none;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  // Elements
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.2em;
+  }
+
+  &__label {
+    display: inline-block;
+  }
+
+  // Variations
+  &--primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-white);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-primary-hover);
+      border-color: var(--color-primary-hover);
+    }
+  }
+
+  &--secondary {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: var(--color-white);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-secondary-hover);
+      border-color: var(--color-secondary-hover);
+    }
+  }
+
+  &--danger {
+    background-color: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-white);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-danger-hover);
+      border-color: var(--color-danger-hover);
+    }
+  }
+
+  &--outline {
+    background-color: transparent;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-primary);
+      color: var(--color-white);
+    }
+  }
+
+  // Size modifiers
+  &--sm {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+
+  &--lg {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-lg);
+  }
+}

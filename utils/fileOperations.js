@@ -8,12 +8,14 @@ import { extractAnnotations } from './annotations.js';
 import stylelint from 'stylelint';
 import chokidar from 'chokidar';
 import Handlebars from 'handlebars';
-import { html as beautify_html } from 'js-beautify';
+import jsBeautify from 'js-beautify';
 import frontMatter from 'front-matter';
 import { getTemplatePath } from './pathResolver.js';
 import MarkdownIt from 'markdown-it';
 import { fileURLToPath } from 'url';
 import EventEmitter from 'events';
+
+const beautify_html = jsBeautify.html;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

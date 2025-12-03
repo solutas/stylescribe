@@ -1,0 +1,17 @@
+{
+  "productionBasepath": "@example/stylescribe-demo/",
+  "headIncludes": {
+    "css": [
+      "./css/base.css"
+    ]
+  },
+  "components": {
+    "groupOrder": [
+      "Foundation",
+      "Interactive",
+      "Feedback",
+      "Layout"
+    ]
+  },
+  "packageFiles": []
+}

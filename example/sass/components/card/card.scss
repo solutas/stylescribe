@@ -1,0 +1,107 @@
+/**
+ * @title Card
+ * @description A flexible container component for displaying content in a
+ *   structured format. Perfect for product listings, blog posts, or any
+ *   grouped content.
+ * @navtitle Card
+ * @group Layout
+ * @order 10
+ * @verified true
+ * @variations default, bordered, elevated
+ * @additional_variations compact
+ * @elements header, image, body, title, description, footer, actions
+ * @examples
+ * - title: Basic Card
+ *   description: Simple card with body content
+ *   code: <div class="mgnl-card mgnl-card--default"><div class="mgnl-card__body"><div class="mgnl-card__title">Card Title</div><div class="mgnl-card__description">Some quick example text.</div></div></div>
+ * - title: Card with Image
+ *   description: Card featuring an image header
+ *   code: <div class="mgnl-card mgnl-card--default"><div class="mgnl-card__image" style="background:#ddd;height:150px"></div><div class="mgnl-card__body"><div class="mgnl-card__title">Featured</div><div class="mgnl-card__description">Card with image.</div></div></div>
+ */
+
+.mgnl-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-base);
+
+  // Elements
+  &__header {
+    padding: var(--spacing-md);
+    border-bottom: var(--border-width) solid var(--color-light);
+    font-weight: var(--font-weight-bold);
+  }
+
+  &__image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background-color: var(--color-light);
+  }
+
+  &__body {
+    padding: var(--spacing-md);
+    flex: 1;
+  }
+
+  &__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-dark);
+  }
+
+  &__description {
+    color: var(--color-secondary);
+    line-height: var(--line-height-base);
+  }
+
+  &__footer {
+    padding: var(--spacing-md);
+    border-top: var(--border-width) solid var(--color-light);
+    background-color: var(--color-light);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    padding-top: 0;
+  }
+
+  // Variations
+  &--default {
+    border: var(--border-width) solid var(--color-light);
+  }
+
+  &--bordered {
+    border: 2px solid var(--color-dark);
+  }
+
+  &--elevated {
+    border: none;
+    box-shadow: var(--shadow-lg);
+
+    &:hover {
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--color-primary);
+      transform: translateY(-2px);
+    }
+  }
+
+  // Modifiers
+  &--compact {
+    .mgnl-card__header,
+    .mgnl-card__body,
+    .mgnl-card__footer,
+    .mgnl-card__actions {
+      padding: var(--spacing-sm);
+    }
+
+    .mgnl-card__title {
+      font-size: var(--font-size-base);
+      margin-bottom: var(--spacing-xs);
+    }
+  }
+}

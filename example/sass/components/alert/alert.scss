@@ -1,0 +1,123 @@
+/**
+ * @title Alert
+ * @description Contextual feedback messages for user actions. Use alerts to
+ *   provide important information, warnings, or confirmation of actions.
+ * @navtitle Alert
+ * @group Feedback
+ * @order 5
+ * @draft true
+ * @role alert
+ * @variations info, success, warning, danger
+ * @additional_variations dismissible
+ * @elements icon, content, title, message, close
+ * @examples
+ * - title: Info Alert
+ *   description: Informational message for the user
+ *   code: <div class="mgnl-alert mgnl-alert--info" role="alert"><div class="mgnl-alert__icon">ℹ</div><div class="mgnl-alert__content"><div class="mgnl-alert__message">This is an informational message.</div></div></div>
+ * - title: Dismissible Alert
+ *   description: Alert that can be closed
+ *   code: <div class="mgnl-alert mgnl-alert--success mgnl-alert--dismissible" role="alert"><div class="mgnl-alert__content"><div class="mgnl-alert__title">Success!</div><div class="mgnl-alert__message">Your changes have been saved.</div></div><button class="mgnl-alert__close">×</button></div>
+ */
+
+.mgnl-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  border: var(--border-width) solid transparent;
+
+  // Elements
+  &__icon {
+    flex-shrink: 0;
+    font-size: var(--font-size-lg);
+    line-height: 1;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  &__message {
+    line-height: var(--line-height-base);
+  }
+
+  &__close {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity var(--transition-fast);
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  // Variations
+  &--info {
+    background-color: #cff4fc;
+    border-color: #b6effb;
+    color: #055160;
+
+    .mgnl-alert__close {
+      color: #055160;
+    }
+  }
+
+  &--success {
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+    color: #0f5132;
+
+    .mgnl-alert__close {
+      color: #0f5132;
+    }
+  }
+
+  &--warning {
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+    color: #664d03;
+
+    .mgnl-alert__close {
+      color: #664d03;
+    }
+  }
+
+  &--danger {
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029;
+
+    .mgnl-alert__close {
+      color: #842029;
+    }
+  }
+
+  // Modifiers
+  &--dismissible {
+    padding-right: var(--spacing-lg);
+    position: relative;
+
+    .mgnl-alert__close {
+      position: absolute;
+      top: var(--spacing-sm);
+      right: var(--spacing-sm);
+    }
+  }
+}

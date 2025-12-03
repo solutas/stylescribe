@@ -1,0 +1,72 @@
+/**
+ * Base styles and CSS custom properties (design tokens)
+ * These are shared across all components
+ */
+
+:root {
+  /* Color Tokens */
+  --color-primary: #0d6efd;
+  --color-primary-hover: #0b5ed7;
+  --color-secondary: #6c757d;
+  --color-secondary-hover: #5c636a;
+  --color-success: #198754;
+  --color-success-hover: #157347;
+  --color-danger: #dc3545;
+  --color-danger-hover: #bb2d3b;
+  --color-warning: #ffc107;
+  --color-warning-hover: #ffca2c;
+  --color-info: #0dcaf0;
+  --color-light: #f8f9fa;
+  --color-dark: #212529;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Spacing Tokens */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Border Tokens */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-pill: 50rem;
+  --border-width: 1px;
+
+  /* Typography Tokens */
+  --font-family-base: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: SFMono-Regular, Menlo, Monaco, monospace;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --line-height-base: 1.5;
+
+  /* Shadow Tokens */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* Transition Tokens */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+}
+
+/* Base reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-dark);
+  margin: 0;
+}
