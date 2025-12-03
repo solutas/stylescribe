@@ -20,7 +20,7 @@ const beautify_html = jsBeautify.html;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const md = new MarkdownIt();
+const md = new MarkdownIt({ html: true });
 
 const ensureDir = dirPath => {
     if (!fs.existsSync(dirPath)) {
@@ -303,6 +303,31 @@ const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
         }
     }
 
+    // First pass: collect page navigation data
+    const pages = [];
+    for (const filePath of markdownFiles) {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const parsedContent = frontMatter(fileContent);
+        const basename = path.basename(filePath, '.md');
+
+        // Skip index page from navigation pages list
+        if (basename !== 'index') {
+            pages.push({
+                title: parsedContent.attributes.navtitle || parsedContent.attributes.title || basename,
+                slug: parsedContent.attributes.slug || basename,
+                order: parsedContent.attributes.order || 999
+            });
+        }
+    }
+    // Sort pages by order
+    pages.sort((a, b) => a.order - b.order);
+
+    // Build navigation object
+    const navigation = {
+        components: (context.components || []).map(c => ({ name: c.name, title: c.title })),
+        pages: pages
+    };
+
     for (const filePath of markdownFiles) {
         const fileContent = fs.readFileSync(filePath, 'utf-8');
         const parsedContent = frontMatter(fileContent);
@@ -341,7 +366,8 @@ const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
             ...parsedContent.attributes,
             content: htmlContent,
             tokens: pageTokens,
-            flatTokens: pageTokens ? flattenTokensForDisplay(pageTokens) : null
+            flatTokens: pageTokens ? flattenTokensForDisplay(pageTokens) : null,
+            navigation
         });
 
         fs.writeFileSync(path.join(outputDir, outputFilename), htmlOutput);
@@ -468,8 +494,32 @@ export const buildSite = async (sourceDir, outputDir, withmd = false) => {
     const template = Handlebars.compile(templateContent);
 
     const groups = groupByGroup(componentsJson, componentGroupOrder);
+
+    // Build navigation data for all pages
+    const docsDir = path.join(process.cwd(), 'docs');
+    let navigationPages = [];
+    if (fs.existsSync(docsDir)) {
+        const docFiles = fs.readdirSync(docsDir).filter(f => f.endsWith('.md') && f !== 'index.md');
+        for (const docFile of docFiles) {
+            const fileContent = fs.readFileSync(path.join(docsDir, docFile), 'utf-8');
+            const parsed = frontMatter(fileContent);
+            const basename = path.basename(docFile, '.md');
+            navigationPages.push({
+                title: parsed.attributes.navtitle || parsed.attributes.title || basename,
+                slug: parsed.attributes.slug || basename,
+                order: parsed.attributes.order || 999
+            });
+        }
+        navigationPages.sort((a, b) => a.order - b.order);
+    }
+
+    const navigation = {
+        components: componentsJson.map(c => ({ name: c.name, title: c.title })),
+        pages: navigationPages
+    };
+
     if (withmd) {
-        processMarkdownFiles(process.cwd(), outputDir, { groups, components: componentsJson, externalCssIncludes, headIncludes });
+        processMarkdownFiles(process.cwd(), outputDir, { groups, components: componentsJson, externalCssIncludes, headIncludes, navigation });
     }
 
     componentsJson.forEach(component => {
@@ -503,7 +553,8 @@ export const buildSite = async (sourceDir, outputDir, withmd = false) => {
             page: component,
             headIncludes: adjustedAllCssIncludes,
             externalCssIncludes,
-            productionBasepath
+            productionBasepath,
+            navigation
         };
 
         const htmlOutput = template(context);
