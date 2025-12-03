@@ -9,16 +9,18 @@
                 <li class="nav-item">
                     <a class="nav-link" href="./index.html">Home</a>
                 </li>
+                {{#each groups as |groupComponents groupName|}}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Components
+                        {{groupName}}
                     </a>
                     <ul class="dropdown-menu">
-                        {{#each navigation.components}}
+                        {{#each groupComponents}}
                         <li><a class="dropdown-item" href="./components/{{this.name}}.html">{{this.title}}</a></li>
                         {{/each}}
                     </ul>
                 </li>
+                {{/each}}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Documentation

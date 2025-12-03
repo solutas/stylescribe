@@ -1,0 +1,157 @@
+/**
+ * @title Modal
+ * @description Dialog overlay for focused interactions and important information.
+ *   Modals require user attention before they can return to the main content.
+ * @navtitle Modal
+ * @group Patterns
+ * @order 1
+ * @verified true
+ * @role dialog
+ * @maintag div
+ * @variations sm, lg, fullscreen
+ * @elements overlay, dialog, header, title, close, body, footer
+ * @examples
+ * - title: Basic Modal
+ *   description: Standard modal with header, body and footer
+ *   code: |
+ *     <div class="mgnl-modal">
+ *       <div class="mgnl-modal__overlay"></div>
+ *       <div class="mgnl-modal__dialog">
+ *         <div class="mgnl-modal__header">
+ *           <h2 class="mgnl-modal__title">Modal Title</h2>
+ *           <button class="mgnl-modal__close">&times;</button>
+ *         </div>
+ *         <div class="mgnl-modal__body">
+ *           <p>Modal content goes here.</p>
+ *         </div>
+ *         <div class="mgnl-modal__footer">
+ *           <button class="mgnl-button mgnl-button--secondary">Cancel</button>
+ *           <button class="mgnl-button mgnl-button--primary">Confirm</button>
+ *         </div>
+ *       </div>
+ *     </div>
+ * - title: Small Modal
+ *   description: Compact modal for simple confirmations
+ *   code: |
+ *     <div class="mgnl-modal mgnl-modal--sm">
+ *       <div class="mgnl-modal__overlay"></div>
+ *       <div class="mgnl-modal__dialog">
+ *         <div class="mgnl-modal__header">
+ *           <h2 class="mgnl-modal__title">Confirm</h2>
+ *           <button class="mgnl-modal__close">&times;</button>
+ *         </div>
+ *         <div class="mgnl-modal__body">
+ *           <p>Are you sure?</p>
+ *         </div>
+ *         <div class="mgnl-modal__footer">
+ *           <button class="mgnl-button mgnl-button--danger">Delete</button>
+ *         </div>
+ *       </div>
+ *     </div>
+ */
+
+.mgnl-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+
+  // Elements
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  &__dialog {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    max-height: calc(100vh - var(--spacing-xl) * 2);
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  &__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--color-text-muted);
+    background: none;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      color: var(--color-text);
+      background-color: var(--color-surface-hover);
+    }
+  }
+
+  &__body {
+    flex: 1;
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+    color: var(--color-text);
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface-hover);
+  }
+
+  // Variations
+  &--sm &__dialog {
+    max-width: 300px;
+  }
+
+  &--lg &__dialog {
+    max-width: 800px;
+  }
+
+  &--fullscreen {
+    padding: 0;
+
+    .mgnl-modal__dialog {
+      max-width: none;
+      max-height: none;
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+    }
+  }
+}

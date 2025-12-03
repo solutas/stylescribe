@@ -334,10 +334,13 @@ const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
         const htmlContent = md.render(parsedContent.body);
 
         let outputFilename;
+        let currentSlug;
         if (parsedContent.attributes.slug) {
-            outputFilename = `${parsedContent.attributes.slug}.html`;
+            currentSlug = parsedContent.attributes.slug;
+            outputFilename = `${currentSlug}.html`;
         } else {
-            outputFilename = path.basename(filePath, '.md') + '.html';
+            currentSlug = path.basename(filePath, '.md');
+            outputFilename = currentSlug + '.html';
         }
 
         // Support custom template via frontmatter
@@ -367,7 +370,8 @@ const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
             content: htmlContent,
             tokens: pageTokens,
             flatTokens: pageTokens ? flattenTokensForDisplay(pageTokens) : null,
-            navigation
+            navigation,
+            currentSlug
         });
 
         fs.writeFileSync(path.join(outputDir, outputFilename), htmlOutput);
@@ -515,6 +519,7 @@ export const buildSite = async (sourceDir, outputDir, withmd = false) => {
 
     const navigation = {
         components: componentsJson.map(c => ({ name: c.name, title: c.title })),
+        groups: groups,
         pages: navigationPages
     };
 

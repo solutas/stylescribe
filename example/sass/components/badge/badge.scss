@@ -1,0 +1,102 @@
+/**
+ * @title Badge
+ * @description Small count and labeling component for highlighting status or counts.
+ *   Use badges to draw attention to new or unread items.
+ * @navtitle Badge
+ * @group Feedback
+ * @order 2
+ * @verified true
+ * @role status
+ * @maintag span
+ * @variations primary, secondary, success, warning, danger
+ * @additional_variations pill, outline
+ * @elements icon
+ * @examples
+ * - title: Basic Badge
+ *   description: Default badge with primary color
+ *   code: <span class="mgnl-badge mgnl-badge--primary">New</span>
+ * - title: Pill Badge
+ *   description: Rounded pill shape for counters
+ *   code: <span class="mgnl-badge mgnl-badge--primary mgnl-badge--pill">42</span>
+ * - title: Badge with Icon
+ *   description: Badge with an icon for visual emphasis
+ *   code: <span class="mgnl-badge mgnl-badge--success"><span class="mgnl-badge__icon">✓</span> Verified</span>
+ */
+
+.mgnl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.25em 0.5em;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+
+  // Elements
+  &__icon {
+    font-size: 0.85em;
+  }
+
+  // Variations
+  &--primary {
+    color: var(--color-white);
+    background-color: var(--color-primary);
+  }
+
+  &--secondary {
+    color: var(--color-white);
+    background-color: var(--color-secondary);
+  }
+
+  &--success {
+    color: var(--color-white);
+    background-color: var(--color-success);
+  }
+
+  &--warning {
+    color: var(--color-text);
+    background-color: var(--color-warning);
+  }
+
+  &--danger {
+    color: var(--color-white);
+    background-color: var(--color-danger);
+  }
+
+  // Additional variations
+  &--pill {
+    border-radius: 50rem;
+    padding: 0.35em 0.65em;
+  }
+
+  &--outline {
+    background-color: transparent;
+    border: 1px solid currentColor;
+
+    &.mgnl-badge--primary {
+      color: var(--color-primary);
+    }
+
+    &.mgnl-badge--secondary {
+      color: var(--color-secondary);
+    }
+
+    &.mgnl-badge--success {
+      color: var(--color-success);
+    }
+
+    &.mgnl-badge--warning {
+      color: var(--color-warning);
+    }
+
+    &.mgnl-badge--danger {
+      color: var(--color-danger);
+    }
+  }
+}

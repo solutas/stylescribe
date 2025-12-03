@@ -7,11 +7,13 @@
   },
   "components": {
     "groupOrder": [
-      "Foundation",
       "Interactive",
+      "Forms",
       "Feedback",
-      "Layout"
+      "Layout",
+      "Patterns"
     ]
   },
+  "tokensFile": "tokens/design-tokens.json",
   "packageFiles": []
 }

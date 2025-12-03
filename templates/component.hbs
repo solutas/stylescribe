@@ -149,14 +149,16 @@
                         <li class="nav-item">
                             <a class="nav-link" href="../index.html">Home</a>
                         </li>
+                        {{#each navigation.groups}}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle active" href="#" data-bs-toggle="dropdown">Components</a>
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">{{@key}}</a>
                             <ul class="dropdown-menu">
-                                {{#each navigation.components}}
+                                {{#each this}}
                                 <li><a class="dropdown-item" href="./{{this.name}}.html">{{this.title}}</a></li>
                                 {{/each}}
                             </ul>
                         </li>
+                        {{/each}}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Documentation</a>
                             <ul class="dropdown-menu">
@@ -173,11 +175,12 @@
         <main class="d-flex" style="height: calc(100vh - 56px); overflow: hidden;">
 
         <nav class="d-flex flex-column flex-shrink-0 p-3 text-bg-light shadow-lg" style="min-width:250px; overflow-y: auto;">
-            <h6 class="text-uppercase text-muted mb-3 small fw-bold">Components</h6>
-            <ul style="margin:0;padding:0;list-style-type: none;">
-                {{#each components}}
+            {{#each groups as |groupComponents groupName|}}
+            <h6 class="text-uppercase text-muted mb-2 small fw-bold {{#unless @first}}mt-3{{/unless}}">{{groupName}}</h6>
+            <ul style="margin:0;padding:0;list-style-type: none;" class="mb-2">
+                {{#each groupComponents}}
                 <li class="mb-1">
-                    {{#if (eq this.path ../currentPath)}}
+                    {{#if (eq this.path ../../currentPath)}}
                         <span class="d-block py-1 px-2 bg-primary text-white rounded">{{#if this.navtitle}}{{this.navtitle}}{{else}}{{this.title}}{{/if}}</span>
                     {{else}}
                         <a href="./{{this.name}}.html" class="d-block py-1 px-2 text-decoration-none rounded hover-bg">{{#if this.navtitle}}{{this.navtitle}}{{else}}{{this.title}}{{/if}}</a>
@@ -185,6 +188,7 @@
                 </li>
                 {{/each}}
             </ul>
+            {{/each}}
         </nav>
 
 

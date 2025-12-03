@@ -241,22 +241,89 @@
                 color: #888;
             }
         </style>
+        <style>
+            .docs-sidebar {
+                position: sticky;
+                top: 20px;
+                height: calc(100vh - 100px);
+                overflow-y: auto;
+            }
+            .docs-sidebar .nav-link {
+                color: #495057;
+                padding: 0.4rem 1rem;
+                border-radius: 4px;
+            }
+            .docs-sidebar .nav-link:hover {
+                background: #f8f9fa;
+            }
+            .docs-sidebar .nav-link.active {
+                background: #e7f1ff;
+                color: #0d6efd;
+                font-weight: 500;
+            }
+            .docs-sidebar .nav-section {
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                color: #6c757d;
+                padding: 0.5rem 1rem;
+                margin-top: 1rem;
+            }
+            .docs-sidebar .nav-section:first-child {
+                margin-top: 0;
+            }
+        </style>
     </head>
     <body>
         {{> navigation }}
 
-        <div class="container mt-4">
-            <nav aria-label="breadcrumb" class="mb-3">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="./index.html">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{title}}</li>
-                </ol>
-            </nav>
-            <h1 class="display-5 mb-4">{{title}}</h1>
-            {{#if description}}
-            <p class="lead text-muted">{{description}}</p>
-            {{/if}}
-            {{#if content}}
+        <div class="container-fluid">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3 col-lg-2 d-none d-md-block bg-light border-end" style="min-height: calc(100vh - 56px);">
+                    <nav class="docs-sidebar py-4">
+                        <div class="nav-section">Documentation</div>
+                        <ul class="nav flex-column">
+                            {{#each navigation.pages}}
+                            <li class="nav-item">
+                                <a class="nav-link {{#if (eq this.slug ../currentSlug)}}active{{/if}}" href="./{{this.slug}}.html">
+                                    {{this.title}}
+                                </a>
+                            </li>
+                            {{/each}}
+                        </ul>
+
+                        {{#if groups}}
+                        <div class="nav-section">Components</div>
+                        {{#each groups as |groupComponents groupName|}}
+                        <div class="nav-subsection px-3 mb-2">
+                            <small class="text-muted fw-bold">{{groupName}}</small>
+                        </div>
+                        <ul class="nav flex-column mb-2">
+                            {{#each groupComponents}}
+                            <li class="nav-item">
+                                <a class="nav-link" href="./components/{{this.name}}.html">{{this.title}}</a>
+                            </li>
+                            {{/each}}
+                        </ul>
+                        {{/each}}
+                        {{/if}}
+                    </nav>
+                </div>
+
+                <!-- Main Content -->
+                <main class="col-md-9 col-lg-10 px-md-4 py-4">
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="./index.html">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{title}}</li>
+                        </ol>
+                    </nav>
+                    <h1 class="display-5 mb-4">{{title}}</h1>
+                    {{#if description}}
+                    <p class="lead text-muted">{{description}}</p>
+                    {{/if}}
+                    {{#if content}}
             <div class="mb-4">
                 {{{content}}}
             </div>
@@ -531,6 +598,8 @@
                 <p>Or specify <code>tokensFile</code> in your <code>.stylescriberc.json</code> configuration.</p>
             </div>
             {{/if}}
+                </main>
+            </div>
         </div>
 
         <script>
