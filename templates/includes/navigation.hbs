@@ -9,18 +9,8 @@
                 <li class="nav-item">
                     <a class="nav-link" href="./index.html">Home</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Components
-                    </a>
-                    <ul class="dropdown-menu">
-                        {{#each groups as |groupComponents groupName|}}
-                        <li><h6 class="dropdown-header">{{groupName}}</h6></li>
-                        {{#each groupComponents}}
-                        <li><a class="dropdown-item" href="./components/{{this.name}}.html">{{this.title}}</a></li>
-                        {{/each}}
-                        {{/each}}
-                    </ul>
+                <li class="nav-item">
+                    <a class="nav-link" href="./components/{{navigation.components.[0].name}}.html">Components</a>
                 </li>
                 {{#each navigation.pages}}
                 <li class="nav-item">
