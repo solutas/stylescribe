@@ -1,10 +1,10 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const fs = require('fs');
-const path = require('path');
+import express from 'express';
+import http from 'http';
+import { Server as SocketIO } from 'socket.io';
+import fs from 'fs';
+import path from 'path';
 
-const { BuildEvents } = require("./fileOperations");
+import { BuildEvents } from './fileOperations.js';
 
 const DEFAULT_PORT = 4142;
 
@@ -15,18 +15,12 @@ const injectScript = (content) => {
     );
 };
 
-const open = async()=>{
-    const open = await import('open');
-    return open.default;
-}
-
-const DevServer = async (SERVER_ROOT) => {
+export const DevServer = async (SERVER_ROOT) => {
     const app = express();
     const server = http.createServer(app);
-    const io = socketIo(server);
+    const io = new SocketIO(server);
 
     const STATIC_ROOT = path.join(process.cwd(), SERVER_ROOT);
-    
 
     // Serve the reload script to clients
     app.get('/reload.js', (req, res) => {
@@ -61,10 +55,10 @@ const DevServer = async (SERVER_ROOT) => {
     app.use(express.static(STATIC_ROOT));
 
     server.listen(DEFAULT_PORT, async () => {
-        const SERVER_URL = `http://localhost:${DEFAULT_PORT}`
+        const SERVER_URL = `http://localhost:${DEFAULT_PORT}`;
         console.log(`Dev server started on ${SERVER_URL}`);
-        const openBrowser = await open();
-        openBrowser(SERVER_URL);
+        const open = (await import('open')).default;
+        open(SERVER_URL);
     });
 
     BuildEvents.on('sitebuild:finished', () => {
@@ -72,5 +66,3 @@ const DevServer = async (SERVER_ROOT) => {
         io.emit('reload');  // Notify all connected clients to reload
     });
 };
-
-exports.DevServer = DevServer;

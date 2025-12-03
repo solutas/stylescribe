@@ -1,17 +1,22 @@
-const chalk = require("chalk");
-const fg = require('fast-glob');
-const fs = require('fs-extra');
-const path = require('path')
-const sass = require('sass-embedded');
-const { pathToFileURL } = require('url');
-const { extractAnnotations } = require("./annotations");
-const stylelint = require('stylelint');
-const chokidar = require('chokidar');
-const handlebars = require('handlebars');
-const beautify_html = require('js-beautify').html;
-const frontMatter = require('front-matter');
-const { getTemplatePath } = require("../utils/pathResolver");
-const MarkdownIt = require('markdown-it');
+import chalk from 'chalk';
+import fg from 'fast-glob';
+import fs from 'fs-extra';
+import path from 'path';
+import * as sass from 'sass-embedded';
+import { pathToFileURL } from 'url';
+import { extractAnnotations } from './annotations.js';
+import stylelint from 'stylelint';
+import chokidar from 'chokidar';
+import Handlebars from 'handlebars';
+import { html as beautify_html } from 'js-beautify';
+import frontMatter from 'front-matter';
+import { getTemplatePath } from './pathResolver.js';
+import MarkdownIt from 'markdown-it';
+import { fileURLToPath } from 'url';
+import EventEmitter from 'events';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const md = new MarkdownIt();
 
@@ -28,18 +33,12 @@ function newlineReviver(key, value) {
     return value;
 }
 
-const DEV_SERVER_ROOT = '.stylescribe_dev';
+export const DEV_SERVER_ROOT = '.stylescribe_dev';
 
+export const BuildEvents = new EventEmitter();
 
-exports.DEV_SERVER_ROOT = DEV_SERVER_ROOT;
-
-const EventEmitter = require('events');
-const BuildEvents = new EventEmitter();
-exports.BuildEvents = BuildEvents;
-
-
-exports.buildComponentsData = async (sourceDir, outputDir, watch) => {
-    let output = []
+export const buildComponentsData = async (sourceDir, outputDir, watch) => {
+    let output = [];
     let components = [];
 
     try {
@@ -78,8 +77,7 @@ exports.buildComponentsData = async (sourceDir, outputDir, watch) => {
         processPackageFiles(process.cwd(), path.join(process.cwd(), DEV_SERVER_ROOT));
         updateComponentJsonWatcher(outputDir);
     }
-
-}
+};
 
 async function updateComponentJsonWatcher(outputDir) {
     const outputFilePath = path.join(outputDir, "components.json");
@@ -89,31 +87,21 @@ async function updateComponentJsonWatcher(outputDir) {
     });
 
     watcher.on('change', async (changedPath) => {
-
-        // console.log(`File ${changedPath} has been changed`);
-
-        // Read and parse the existing components.json
         const existingData = JSON.parse(fs.readFileSync(outputFilePath, 'utf-8'));
-
-        // Read the changed JSON file
         const changedFileContent = JSON.parse(fs.readFileSync(changedPath, 'utf-8'));
         const parentDir = path.dirname(changedPath);
         const relativePath = path.relative(outputDir, parentDir);
         const name = path.basename(parentDir);
         const updatedContent = { name, ...changedFileContent, path: relativePath };
 
-        // Check if this file's content already exists in components.json
         const existingIndex = existingData.findIndex(item => item.path === relativePath);
 
         if (existingIndex !== -1) {
-            // Update the existing content
             existingData[existingIndex] = updatedContent;
         } else {
-            // If it doesn't exist, add it
             existingData.push(updatedContent);
         }
 
-        // Sort and write back to components.json
         const sortedData = existingData.sort((a, b) => {
             const orderA = a.order !== undefined ? a.order : Infinity;
             const orderB = b.order !== undefined ? b.order : Infinity;
@@ -121,23 +109,17 @@ async function updateComponentJsonWatcher(outputDir) {
         });
 
         fs.writeFileSync(outputFilePath, JSON.stringify(sortedData, null, 4));
-        await buildSite(outputDir, path.join(process.cwd(), DEV_SERVER_ROOT))
+        await buildSite(outputDir, path.join(process.cwd(), DEV_SERVER_ROOT));
         BuildEvents.emit('sitebuild:finished');
     });
 }
 
-
-
-
-
-exports.buildCssAndAnnotation = async (sourceDir, outputDir, watch) => {
-    // Ensure the source directory exists
+export const buildCssAndAnnotation = async (sourceDir, outputDir, watch) => {
     if (!fs.existsSync(sourceDir)) {
         console.error(`Error: Source directory ${sourceDir} does not exist.`);
         return;
     }
 
-    // Check if outputDir exists. If not, create it.
     if (!fs.existsSync(outputDir)) {
         try {
             fs.mkdirSync(outputDir, { recursive: true });
@@ -157,7 +139,7 @@ exports.buildCssAndAnnotation = async (sourceDir, outputDir, watch) => {
     }
 
     for (const filePath of styleFiles) {
-        await processStyleFile(filePath, sourceDir, outputDir)
+        await processStyleFile(filePath, sourceDir, outputDir);
     }
 
     if (watch) {
@@ -173,31 +155,27 @@ exports.buildCssAndAnnotation = async (sourceDir, outputDir, watch) => {
                 console.error(`Error processing file ${filePath} on change:`, readError.message);
             }
         });
-
     }
-
 };
 
 const registerPartials = () => {
     const defaultIncludesDir = path.join(__dirname, '..', 'templates', 'includes');
     const cwdIncludesDir = path.join(process.cwd(), '.stylescribe', 'templates', 'includes');
 
-    // Register default partials
     if (fs.existsSync(defaultIncludesDir)) {
         const files = fs.readdirSync(defaultIncludesDir);
         files.forEach(file => {
             const partial = fs.readFileSync(path.join(defaultIncludesDir, file), 'utf-8');
             const partialName = path.basename(file, '.hbs');
-            handlebars.registerPartial(partialName, partial);
+            Handlebars.registerPartial(partialName, partial);
         });
     }
 
-    // Overwrite or add new partials from current working directory
     if (fs.existsSync(cwdIncludesDir)) {
         const files = fs.readdirSync(cwdIncludesDir);
         files.forEach(file => {
             const partial = fs.readFileSync(path.join(cwdIncludesDir, file), 'utf-8');
-            handlebars.registerPartial(path.basename(file, '.hbs'), partial);
+            Handlebars.registerPartial(path.basename(file, '.hbs'), partial);
         });
     }
 };
@@ -207,14 +185,12 @@ registerPartials();
 const processStyleFile = async (filePath, sourceDir, outputDir) => {
     try {
         const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const result2 = await stylelint
-            .lint({
-                code: fileContent,
-                formatter: "verbose"
-            });
+        const result2 = await stylelint.lint({
+            code: fileContent,
+            formatter: "verbose"
+        });
 
         if (result2.results[0].warnings.length > 0) {
-            // Print a header message
             console.error(chalk.bgRed.white.bold('Stylelint Warnings:'));
 
             result2.results[0].warnings.forEach(warning => {
@@ -222,29 +198,23 @@ const processStyleFile = async (filePath, sourceDir, outputDir) => {
                 console.error(chalk.bgRed.white(message));
             });
 
-            // Throw an error to indicate the presence of warnings
             throw new Error("Stylelint detected warnings in the file.");
         }
 
-        // Process the file content, extract annotations, etc.
         const result = await sass.compile(filePath, {
             importers: [
-                // import from node_modules
                 {
                     canonicalize(url) {
                         if (!url.startsWith('~')) {
-                            return null; // This importer doesn't recognize the URL, so it returns null.
+                            return null;
                         }
-
                         let file_in_modules = path.resolve(process.cwd(), 'node_modules', url.substring(1));
                         return new URL(`file://${file_in_modules}`);
                     },
                     load(canonicalUrl) {
                         try {
                             const filePath = canonicalUrl.pathname;
-                            // On Windows, URL's pathname might start with an extra '/', so you'd need to remove it
                             const normalizedFilePath = process.platform === 'win32' ? path.normalize(filePath.slice(1)) : path.normalize(filePath);
-
                             const fileContents = fs.readFileSync(normalizedFilePath, 'utf-8');
 
                             return {
@@ -257,34 +227,21 @@ const processStyleFile = async (filePath, sourceDir, outputDir) => {
                         }
                     }
                 },
-                // inline svg's and save as scss var
                 {
                     canonicalize(url, options) {
                         if (!url.endsWith('.svg')) {
-                            return null; // This importer doesn't recognize the URL, so it returns null.
+                            return null;
                         }
-
-                        // Extract directory from the containing URL
                         let containingDir = path.dirname(options.containingUrl.pathname);
-
-                        // Resolve the relative URL of the SVG file to an absolute file path
                         let svgAbsolutePath = path.resolve(containingDir, url);
-
-
-                        // Create and return a URL object with the absolute file path
                         return new URL(`file://${svgAbsolutePath}`);
                     },
                     load(canonicalUrl) {
                         try {
                             const filePath = canonicalUrl.pathname;
-                            // On Windows, URL's pathname might start with an extra '/', so you'd need to remove it
                             const normalizedFilePath = process.platform === 'win32' ? path.normalize(filePath.slice(1)) : path.normalize(filePath);
-
                             const fileContents = fs.readFileSync(normalizedFilePath, 'utf-8');
-                            // Base64 encode the file contents
                             const base64Encoded = Buffer.from(fileContents).toString('base64');
-
-                            // Extract the file name and remove '.svg' extension to create a variable name
                             const fileName = path.basename(normalizedFilePath, '.svg');
                             const sassVariable = `$${fileName}: "data:image/svg+xml;base64,${base64Encoded}";`;
 
@@ -298,11 +255,8 @@ const processStyleFile = async (filePath, sourceDir, outputDir) => {
                         }
                     }
                 }
-
             ]
         });
-
-
 
         const output = extractAnnotations(result.css);
 
@@ -319,27 +273,15 @@ const processStyleFile = async (filePath, sourceDir, outputDir) => {
 
         console.log(chalk.green(`Compiled and saved to`), outputFilePath);
     } catch (readError) {
-        // console.error(`Error reading file ${filePath}:`, readError.message);
         throw new Error(`Error reading file ${filePath}:\n${readError.message}`);
     }
-
-    // If there's additional logic for processing the file, consider adding more try/catch blocks
-    try {
-        // For example, processing the annotations
-
-    } catch (processError) {
-        throw new Error(`Error processing annotations in ${filePath}:\n${readError.message}`);
-    }
-}
+};
 
 const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
-    // Glob for markdown files
     const markdownFiles = await fg([`${sourceDir}/docs/**/*.md`]);
 
     for (const filePath of markdownFiles) {
         const fileContent = fs.readFileSync(filePath, 'utf-8');
-
-        // Extract front matter and content
         const parsedContent = frontMatter(fileContent);
         const htmlContent = md.render(parsedContent.body);
 
@@ -350,7 +292,6 @@ const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
             outputFilename = path.basename(filePath, '.md') + '.html';
         }
 
-        // Choose a template based on filename
         let templatePath;
         if (path.basename(filePath) === 'index.md') {
             templatePath = getTemplatePath('index.hbs');
@@ -359,58 +300,59 @@ const processMarkdownFiles = async (sourceDir, outputDir, context = {}) => {
         }
 
         const templateContent = fs.readFileSync(templatePath, 'utf-8');
-        const template = handlebars.compile(templateContent);
-
-        // Merge the data from front matter and the HTML content
+        const template = Handlebars.compile(templateContent);
         const htmlOutput = template({ ...context, ...parsedContent.attributes, content: htmlContent });
 
-        // Write the output HTML
         fs.writeFileSync(path.join(outputDir, outputFilename), htmlOutput);
     }
-}
+};
+
 const watchDocsFolderForChanges = (sourceDir, outputDir) => {
     const md_dir = path.join(process.cwd(), "docs");
     chokidar.watch(md_dir, { persistent: true }).on('change', async (filePath) => {
         if (path.extname(filePath) === '.md') {
-            // processMarkdownFiles(sourceDir, outputDir);
-            await buildSite(sourceDir, outputDir, true); // trigger buildSite on changes
+            await buildSite(sourceDir, outputDir, true);
             BuildEvents.emit('sitebuild:finished');
         }
     });
-}
-exports.watchDocsFolderForChanges = watchDocsFolderForChanges;
-exports.processMarkdownFiles = async (sourceDir, outputDir, watch) => {
-    buildSite(sourceDir, outputDir, true); // trigger buildSite on changes
+};
+
+export { watchDocsFolderForChanges };
+
+export const processMarkdownFiles_ = async (sourceDir, outputDir, watch) => {
+    buildSite(sourceDir, outputDir, true);
     if (watch) {
         watchDocsFolderForChanges(sourceDir, outputDir);
     }
-}
+};
 
-
-// TODO: extract to own file
-
-handlebars.registerHelper('eq', function (a, b, options) {
-    return (a === b)
+// Handlebars helpers
+Handlebars.registerHelper('eq', function (a, b) {
+    return (a === b);
 });
-handlebars.registerHelper('prettyprint', function (content) {
-    const html = beautify_html(content); // replace stringified \n with actual newline
+
+Handlebars.registerHelper('prettyprint', function (content) {
+    const html = beautify_html(content);
     return html;
 });
 
-handlebars.registerHelper('nl2br', function (text) {
+Handlebars.registerHelper('nl2br', function (text) {
     const html = (text || '').toString().replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
-    return new handlebars.SafeString(html);
+    return new Handlebars.SafeString(html);
 });
 
-handlebars.registerHelper('capitalizeFirst', function (text) {
+Handlebars.registerHelper('capitalizeFirst', function (text) {
     if (typeof text !== 'string' || !text) {
         return '';
     }
     return text.charAt(0).toUpperCase() + text.slice(1);
 });
 
+Handlebars.registerHelper('json', function (context) {
+    return JSON.stringify(context);
+});
+
 function groupByGroup(components, groupOrder = []) {
-    // First, group components by their group
     const grouped = components.reduce((acc, component) => {
         (acc[component.group] = acc[component.group] || []).push(component);
         return acc;
@@ -418,7 +360,6 @@ function groupByGroup(components, groupOrder = []) {
 
     const orderedGroups = {};
 
-    // First, add groups in the predefined order from groupOrder
     groupOrder.forEach(group => {
         if (grouped[group]) {
             orderedGroups[group] = grouped[group];
@@ -426,7 +367,6 @@ function groupByGroup(components, groupOrder = []) {
         }
     });
 
-    // Then, add remaining groups
     for (let group in grouped) {
         orderedGroups[group] = grouped[group];
     }
@@ -434,17 +374,17 @@ function groupByGroup(components, groupOrder = []) {
     return orderedGroups;
 }
 
-
-const buildSite = async (sourceDir, outputDir, withmd = false) => {
-    // Ensure the output directory exists. If not, create it.
+export const buildSite = async (sourceDir, outputDir, withmd = false) => {
     if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
     }
+
     const packageJsonPath = path.join(process.cwd(), '.stylescriberc.json');
     let headIncludes = {};
     let externalCssIncludes = [];
     let componentGroupOrder = [];
     let productionBasepath;
+
     if (fs.existsSync(packageJsonPath)) {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
         headIncludes = packageJson.headIncludes?.css || [];
@@ -455,40 +395,31 @@ const buildSite = async (sourceDir, outputDir, withmd = false) => {
         productionBasepath = packageJson.productionBasepath;
     }
 
-    // Read components.json
     const componentsFilePath = path.join(sourceDir, 'components.json');
     const componentsJson = JSON.parse(fs.readFileSync(componentsFilePath, 'utf-8'), newlineReviver);
 
-    // Read the Handlebars template
     const templatePath = getTemplatePath('component.hbs');
     const templateContent = fs.readFileSync(templatePath, 'utf-8');
-    const template = handlebars.compile(templateContent);
+    const template = Handlebars.compile(templateContent);
 
     const groups = groupByGroup(componentsJson, componentGroupOrder);
     if (withmd) {
         processMarkdownFiles(process.cwd(), outputDir, { groups, components: componentsJson, externalCssIncludes, headIncludes });
     }
 
-    // For each component, generate HTML using the template and save it
     componentsJson.forEach(component => {
-        // Adjust the CSS paths for the current component        
         const adjustedCssIncludes = (headIncludes || []).map(cssPath => {
             if (cssPath.startsWith('./')) {
-                // Determine the directory of the current component's HTML file
                 const componentDir = path.dirname(path.join(outputDir, `${component.path}.html`));
-
-                // Calculate the relative path from the current component's directory to the CSS file
                 return path.relative(componentDir, path.join(outputDir, cssPath.substring(2)));
             }
             return cssPath;
         });
 
-        // Process component dependencies
         const dependencyCssPaths = (component.dependencies || []).map(dep => {
             return `./css/components/${dep}.css`;
         });
 
-        // Adjust paths for component's own CSS and its dependencies
         const componentCssRelativePath = `./css/components/${path.basename(component.path)}.css`;
         const allCssIncludes = [...adjustedCssIncludes, ...dependencyCssPaths, componentCssRelativePath];
 
@@ -500,8 +431,6 @@ const buildSite = async (sourceDir, outputDir, withmd = false) => {
             return cssPath;
         });
 
-
-
         const context = {
             currentPath: component.path,
             components: componentsJson,
@@ -512,18 +441,15 @@ const buildSite = async (sourceDir, outputDir, withmd = false) => {
             productionBasepath
         };
 
-
         const htmlOutput = template(context);
 
         const outputFilePath = path.join(outputDir, `${component.path}.html`);
         const outputFileDir = path.dirname(outputFilePath);
 
-        // Ensure the directory for the current component exists
         if (!fs.existsSync(outputFileDir)) {
             fs.mkdirSync(outputFileDir, { recursive: true });
         }
 
-        // Check if there's a CSS file named after the component in the source directory
         const componentCssSource = path.join(sourceDir, component.path, `${path.basename(component.path)}.css`);
 
         if (fs.existsSync(componentCssSource)) {
@@ -536,9 +462,7 @@ const buildSite = async (sourceDir, outputDir, withmd = false) => {
     });
 };
 
-
-const processPackageFiles = async (cwd, outputDir) => {
-    // Read package.json from the current working directory
+export const processPackageFiles = async (cwd, outputDir) => {
     const packageJsonPath = path.join(cwd, '.stylescriberc.json');
 
     if (!fs.existsSync(packageJsonPath)) {
@@ -551,37 +475,31 @@ const processPackageFiles = async (cwd, outputDir) => {
         return;
     }
 
-
-    // For each entry in packageFiles, process and copy over
     packageJson.packageFiles.forEach(entry => {
         const [src, tgt] = entry.split(':');
 
         let srcPath;
         if (src.startsWith('~')) {
-            // Located in node_modules
             srcPath = path.join(cwd, 'node_modules', src.substring(1));
         } else {
-            // Relative or absolute path
             srcPath = path.isAbsolute(src) ? src : path.join(cwd, src);
         }
 
         let targetPath = path.join(outputDir, tgt);
 
-        // If srcPath is a file, append its name to the target path
         if (fs.statSync(srcPath).isFile()) {
             targetPath = path.join(targetPath, path.basename(srcPath));
         }
 
-        // Ensure the target directory exists
         const targetDir = path.dirname(targetPath);
         if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
         }
 
-        // Copy file or directory        
         fs.copySync(srcPath, targetPath);
         console.log(chalk.green(`Copied packaged dependency`), src, tgt);
     });
 };
-exports.buildSite = buildSite;
-exports.processPackageFiles = processPackageFiles;
+
+// Re-export processMarkdownFiles with original name for backward compatibility
+export { processMarkdownFiles_ as processMarkdownFiles };

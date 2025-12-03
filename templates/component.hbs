@@ -3,18 +3,18 @@
         <title>{{page.title}}</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
-       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"> 
+       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
         {{#if externalCssIncludes}}
         <style>
             {{#each externalCssIncludes}}
-            @import url('{{{this}}}');      
+            @import url('{{{this}}}');
             {{/each}}
-        </style>    
-        {{/if}}        
+        </style>
+        {{/if}}
         {{#each headIncludes}}
         <link rel="stylesheet" href="{{this}}">
         {{/each}}
-        
+
         <style>
             .code-container {
     position: relative;
@@ -51,16 +51,100 @@
 .code-container:hover .expand-btn {
     display: block;
 }
+
+/* Interactive variant toggles */
+.variant-controls {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.variant-controls h6 {
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #495057;
+}
+.variant-toggle {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+.variant-toggle input[type="checkbox"],
+.variant-toggle input[type="radio"] {
+    margin-right: 6px;
+}
+.variant-toggle label {
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 4px;
+    background: #e9ecef;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+.variant-toggle input:checked + label {
+    background: #0d6efd;
+    color: white;
+}
+.variant-toggle label:hover {
+    background: #dee2e6;
+}
+.variant-toggle input:checked + label:hover {
+    background: #0b5ed7;
+}
+.variant-toggle input {
+    display: none;
+}
+.preview-container {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 24px;
+    background: white;
+    min-height: 100px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+}
+.preview-container:hover {
+    border-color: #adb5bd;
+}
+.preview-label {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+.responsive-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.responsive-btn {
+    padding: 6px 12px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.responsive-btn.active {
+    background: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+.responsive-btn:hover:not(.active) {
+    background: #f8f9fa;
+}
         </style>
     </head>
     <body>
-        
+
         <main class="d-flex vh-100" style="overflow: hidden;">
 
         <nav class="d-flex flex-column flex-shrink-0 p-3 text-bg-light shadow-lg" style="min-width:250px">
             <div style="fill:#000" class="mb-4 p-3 text-center">
                 <a href="../index.html" style="border:0;color:#000">
-                {{> branding }} 
+                {{> branding }}
                 </a>
             </div>
             <ul style="margin:0;padding:0;list-style-type: none;">
@@ -75,7 +159,7 @@
                 {{/each}}
             </ul>
         </nav>
-     
+
 
 
 
@@ -83,7 +167,7 @@
 
 <div class="container p-3">
 <div class="border-bottom mb-3 ">
-    
+
 
            <h1>{{page.title}}</h1>
         <p>{{{page.description}}}</p>
@@ -101,14 +185,14 @@
         <div class="p-2">Experiment</div>
         {{/if}}
         {{/if}}
-        
+
     </div>
 
         {{#if page.dependencies}}
         <div class="mt-3 shadow-lg border p-3 rounded">Dependencies:
-            
+
         {{#each page.dependencies}}
-            <a href="./{{this}}.html">{{this}}</a> 
+            <a href="./{{this}}.html">{{this}}</a>
         {{/each}}
 
         </div>
@@ -159,12 +243,92 @@ import "{{productionBasepath}}{{page.path}}/{{page.name}}.css"
 {{/if}}
 
 {{#if page.variations }}
-<h1>Variations</h1>
+<h1>Interactive Playground</h1>
+
+<!-- Variant Controls Panel -->
+<div class="variant-controls">
+    <h6>Customize Component</h6>
+
+    <div class="mb-3">
+        <small class="text-muted d-block mb-2">Variation Style:</small>
+        <div id="variation-toggles">
+        {{#each page.variations}}
+            <span class="variant-toggle">
+                <input type="radio" name="variation" id="var-{{this}}" value="{{this}}" {{#if @first}}checked{{/if}}>
+                <label for="var-{{this}}">{{capitalizeFirst this}}</label>
+            </span>
+        {{/each}}
+        </div>
+    </div>
+
+    {{#if page.additional_variations}}
+    <div class="mb-3">
+        <small class="text-muted d-block mb-2">Additional Modifiers:</small>
+        <div id="modifier-toggles">
+        {{#each page.additional_variations}}
+            <span class="variant-toggle">
+                <input type="checkbox" id="mod-{{this}}" value="{{this}}">
+                <label for="mod-{{this}}">{{capitalizeFirst this}}</label>
+            </span>
+        {{/each}}
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if page.elements}}
+    <div class="mb-3">
+        <small class="text-muted d-block mb-2">Show Elements:</small>
+        <div id="element-toggles">
+        {{#each page.elements}}
+            <span class="variant-toggle">
+                <input type="checkbox" id="elem-{{this}}" value="{{this}}" checked>
+                <label for="elem-{{this}}">{{capitalizeFirst this}}</label>
+            </span>
+        {{/each}}
+        </div>
+    </div>
+    {{/if}}
+</div>
+
+<!-- Responsive Preview Controls -->
+<div class="responsive-controls">
+    <button class="responsive-btn active" data-width="100%">Full Width</button>
+    <button class="responsive-btn" data-width="375px">Mobile</button>
+    <button class="responsive-btn" data-width="768px">Tablet</button>
+    <button class="responsive-btn" data-width="1024px">Desktop</button>
+</div>
+
+<!-- Live Preview Area -->
+<div class="preview-label">Live Preview</div>
+<div class="preview-container" id="live-preview" style="width: 100%;">
+    <{{#if page.maintag }}{{page.maintag}}{{else}}div{{/if}}
+        role="{{page.role}}"
+        tabindex="0"
+        class="mgnl-{{page.name}} mgnl-{{page.name}}--{{#each page.variations}}{{#if @first}}{{this}}{{/if}}{{/each}}"
+        id="preview-component">
+        {{#each page.elements}}
+        <div class="mgnl-{{../page.name}}__{{this}}" data-element="{{this}}">{{capitalizeFirst this}}</div>
+        {{/each}}
+    </{{#if page.maintag }}{{page.maintag}}{{else}}div{{/if}}>
+</div>
+
+<!-- Generated Code Display -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Generated Code</span>
+        <button class="btn btn-sm btn-outline-secondary" id="copy-generated">Copy</button>
+    </div>
+    <div class="card-body">
+        <pre id="generated-code" class="mb-0"><code class="language-html"></code></pre>
+    </div>
+</div>
+
+<h2>All Variations Reference</h2>
      {{#each page.variations}}
-    <h2>{{ this }}</h2>
+    <h3>{{ this }}</h3>
 
       <div class="mb-4 ">
-    <{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}} role="{{../page.role}}" tabindex="0" class="mgnl-{{../page.name}} mgnl-{{../page.name}}--{{ this }} 
+    <{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}} role="{{../page.role}}" tabindex="0" class="mgnl-{{../page.name}} mgnl-{{../page.name}}--{{ this }}
         {{#each ../page.additional_variations}}
         mgnl-{{../../page.name}}--{{ this }}
         {{/each}}">
@@ -172,31 +336,34 @@ import "{{productionBasepath}}{{page.path}}/{{page.name}}.css"
         <div class="mgnl-{{../../page.name}}__{{ this }}">{{capitalizeFirst this }}</div>
         {{/each}}
     </{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}}>
-    </div>  
+    </div>
 
 <pre>
     <code class="language-html">
-&lt;{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}} role="{{../page.role}}" tabindex="0" class="mgnl-{{../page.name}} mgnl-{{../page.name}}--{{ this }} 
+&lt;{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}} role="{{../page.role}}" tabindex="0" class="mgnl-{{../page.name}} mgnl-{{../page.name}}--{{ this }}
         {{#each ../page.additional_variations}}
         mgnl-{{../../page.name}}--{{ this }}
         {{/each}}"&gt;
         {{#each ../page.elements}}
         &lt;div class="mgnl-{{../../page.name}}__{{ this }}"&gt;{{ this }}&lt;/div&gt;
 {{/each}}
-&lt;/{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}}&gt;    
+&lt;/{{#if ../page.maintag }}{{../page.maintag}}{{else}}div{{/if}}&gt;
     </code>
     </pre>
-        
+
 {{/each}}
 </div>
 
 {{/if}}
 
 <div class="container">
-    <h3>Use CSS Var</h3>
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+    <h3>CSS Custom Properties</h3>
+    <p class="text-muted">CSS variables used by this component:</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
     {{#each ./page.cssVars}}
-        <div style="padding: 10px; border: 1px solid #ccc;">--{{this}}</div>
+        <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 13px;">
+            <code>--{{this}}</code>
+        </div>
     {{/each}}
 </div>
 
@@ -209,34 +376,156 @@ import "{{productionBasepath}}{{page.path}}/{{page.name}}.css"
 
 
 <script>
+// Expand/collapse code blocks
 document.querySelectorAll('.expand-btn').forEach(function(button) {
     button.addEventListener('click', function() {
         var container = this.parentElement;
 
         if (container.style.maxHeight === 'none') {
-            // If already expanded, shrink it
             container.style.maxHeight = '100px';
             this.innerText = 'Expand';
         } else {
-            // If shrunk, expand it
             container.style.maxHeight = 'none';
             this.innerText = 'Collapse';
         }
     });
 });
 
+// Copy code buttons
 document.querySelectorAll('.copy-btn').forEach(function(button) {
-    
     button.addEventListener('click', function() {
-        var textarea = this.parentElement.querySelector("textarea"); // get the textarea next to the copy button
-        console.log(textarea)
-        textarea.focus();
-        textarea.select();
-        document.execCommand('copy');
-        alert('Code copied to clipboard!');
+        var textarea = this.parentElement.querySelector("textarea");
+        if (textarea) {
+            textarea.focus();
+            textarea.select();
+            document.execCommand('copy');
+        }
+
+        const originalText = this.innerText;
+        this.innerText = 'Copied!';
+        setTimeout(() => { this.innerText = originalText; }, 1500);
     });
 });
 
+// Interactive variant system
+(function() {
+    const componentName = '{{page.name}}';
+    const baseClass = 'mgnl-' + componentName;
+    const previewEl = document.getElementById('preview-component');
+    const previewContainer = document.getElementById('live-preview');
+    const generatedCodeEl = document.getElementById('generated-code');
+
+    if (!previewEl) return;
+
+    // Store component metadata
+    const componentMeta = {
+        variations: {{{json page.variations}}},
+        additionalVariations: {{{json page.additional_variations}}},
+        elements: {{{json page.elements}}},
+        maintag: '{{#if page.maintag}}{{page.maintag}}{{else}}div{{/if}}',
+        role: '{{page.role}}'
+    };
+
+    function updatePreview() {
+        // Get selected variation
+        const selectedVariation = document.querySelector('input[name="variation"]:checked');
+        const variation = selectedVariation ? selectedVariation.value : '';
+
+        // Get active modifiers
+        const modifiers = [];
+        document.querySelectorAll('#modifier-toggles input:checked').forEach(function(input) {
+            modifiers.push(input.value);
+        });
+
+        // Get visible elements
+        const visibleElements = [];
+        document.querySelectorAll('#element-toggles input:checked').forEach(function(input) {
+            visibleElements.push(input.value);
+        });
+
+        // Build class string
+        let classes = [baseClass];
+        if (variation) {
+            classes.push(baseClass + '--' + variation);
+        }
+        modifiers.forEach(function(mod) {
+            classes.push(baseClass + '--' + mod);
+        });
+
+        previewEl.className = classes.join(' ');
+
+        // Toggle element visibility
+        previewEl.querySelectorAll('[data-element]').forEach(function(el) {
+            const elementName = el.getAttribute('data-element');
+            el.style.display = visibleElements.includes(elementName) ? '' : 'none';
+        });
+
+        // Update generated code
+        updateGeneratedCode(classes, visibleElements);
+    }
+
+    function updateGeneratedCode(classes, visibleElements) {
+        const tag = componentMeta.maintag;
+        const role = componentMeta.role;
+
+        let code = '<' + tag;
+        if (role) {
+            code += ' role="' + role + '"';
+        }
+        code += ' tabindex="0" class="' + classes.join(' ') + '">\n';
+
+        visibleElements.forEach(function(elem) {
+            code += '    <div class="' + baseClass + '__' + elem + '">' + elem.charAt(0).toUpperCase() + elem.slice(1) + '</div>\n';
+        });
+
+        code += '</' + tag + '>';
+
+        if (generatedCodeEl) {
+            generatedCodeEl.querySelector('code').textContent = code;
+            Prism.highlightElement(generatedCodeEl.querySelector('code'));
+        }
+    }
+
+    // Event listeners for controls
+    document.querySelectorAll('#variation-toggles input').forEach(function(input) {
+        input.addEventListener('change', updatePreview);
+    });
+
+    document.querySelectorAll('#modifier-toggles input').forEach(function(input) {
+        input.addEventListener('change', updatePreview);
+    });
+
+    document.querySelectorAll('#element-toggles input').forEach(function(input) {
+        input.addEventListener('change', updatePreview);
+    });
+
+    // Responsive preview controls
+    document.querySelectorAll('.responsive-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.responsive-btn').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            this.classList.add('active');
+            previewContainer.style.width = this.getAttribute('data-width');
+        });
+    });
+
+    // Copy generated code
+    const copyBtn = document.getElementById('copy-generated');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            const code = generatedCodeEl.querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(function() {
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = 'Copied!';
+                setTimeout(function() { copyBtn.innerText = originalText; }, 1500);
+            });
+        });
+    }
+
+    // Initialize
+    updatePreview();
+})();
 </script>
     </body>
 </html>

@@ -1,13 +1,19 @@
 {
   "name": "stylescribe",
-  "version": "0.0.13",
-  "description": "stylescribe is an open-source style guide building tool for css only libraries",
+  "version": "0.1.0",
+  "description": "stylescribe is an open-source style guide building tool with design token support",
+  "type": "module",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "bin": {
     "stylescribe": "./bin/stylescribe.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "repository": {
     "url": "git@github.com:solutas/stylescribe.git",
@@ -16,7 +22,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chalk": "^4.1.2",
+    "chalk": "^5.3.0",
     "chokidar": "^3.5.3",
     "express": "^4.18.2",
     "fast-glob": "^3.3.1",
@@ -31,5 +37,8 @@
     "socket.io": "^4.7.2",
     "stylelint": "^15.10.3",
     "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0"
   }
 }

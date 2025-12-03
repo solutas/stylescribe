@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
-const yargs = require('yargs/yargs');
-const { hideBin } = require('yargs/helpers');
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
-const buildCommand = require('../commands/build');
-const devCommand = require('../commands/dev');
-const createComponentCommand = require('../commands/createComponent');
-const createPageCommand = require('../commands/createPage');
-const docs = require('../commands/docs');
+import buildCommand from '../commands/build.js';
+import devCommand from '../commands/dev.js';
+import createComponentCommand from '../commands/createComponent.js';
+import createPageCommand from '../commands/createPage.js';
+import docs from '../commands/docs.js';
+import tokensCommand from '../commands/tokens.js';
 
 yargs(hideBin(process.argv))
     .command(buildCommand)
@@ -15,6 +16,7 @@ yargs(hideBin(process.argv))
     .command(docs)
     .command(createComponentCommand)
     .command(createPageCommand)
+    .command(tokensCommand)
     .demandCommand(1, 'You need at least one command before moving on')
     .help()
     .argv;

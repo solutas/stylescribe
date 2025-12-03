@@ -1,12 +1,11 @@
 const RESERVED_WORDS = ['cssVars'];
 
-exports.extractAnnotations = function (content) {
+export function extractAnnotations(content) {
     const commentMatch = content.match(/\/\*\*([\s\S]*?)\*\//);
 
     if (commentMatch) {
         const commentContent = commentMatch[1];
         const annotationRegExp = /@(\w+)([^@]*)/gs;
-        // const annotationRegExp = /(^|\n)\s*@(\w+)([^@]*)/gs;
 
         let match;
         let annotationsObj = {};
@@ -26,8 +25,7 @@ exports.extractAnnotations = function (content) {
             // Check for new format when the key ends with 's'
             if (key.endsWith('s') && value.startsWith('-')) {
                 let items = [];
-                const itemEntryRegex = /-\s+([\s\S]*?)(?=-\s|$)/g; // Captures each item's content
-                // const keyValueRegex = /(\w+):\s*([\s\S]*?)(?=\w+:|$)/g; // Captures key-value pairs within an item
+                const itemEntryRegex = /-\s+([\s\S]*?)(?=-\s|$)/g;
                 const keyValueRegex = /(?<=^|\s)(\w+):\s*([\s\S]*?)(?=\s\w+:|$)/g;
 
                 let itemEntryMatch;
